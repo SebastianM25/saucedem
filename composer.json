@@ -1,0 +1,22 @@
+{
+  "name": "sebastian/saucedemo-order-test",
+  "description": "SauceDemo order placement test automation with PHPUnit",
+  "type": "project",
+  "require-dev": {
+    "phpunit/phpunit": "^10.5",
+    "php-webdriver/webdriver": "^1.15"
+  },
+  "autoload": {
+    "psr-4": {
+      "SauceDemo\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "SauceDemo\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit --testdox"
+  }
+}

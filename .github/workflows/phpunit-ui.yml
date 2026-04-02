@@ -1,0 +1,45 @@
+name: PHPUnit UI Tests
+
+on:
+  push:
+    branches:
+      - main
+      - order-placement
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  order-placement-test:
+    runs-on: ubuntu-latest
+
+    services:
+      selenium:
+        image: selenium/standalone-chrome:latest
+        ports:
+          - 4444:4444
+        options: >-
+          --shm-size=2g
+          --health-cmd="curl -f http://localhost:4444/status || exit 1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Run PHPUnit
+        env:
+          SELENIUM_URL: http://localhost:4444
+          BASE_URL: https://www.saucedemo.com/
+        run: ./vendor/bin/phpunit --testdox

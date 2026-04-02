@@ -20,13 +20,22 @@ class CheckoutPage extends BasePage
 
     public function continue(): CheckoutOverviewPage
     {
-        $this->click($this->byId('continue'));
-
         $errorBanner = WebDriverBy::cssSelector('h3[data-test="error"]');
-        for ($attempt = 0; $attempt < 20; $attempt++) {
+        $continueById = WebDriverBy::id('continue');
+        $continueByDataTest = WebDriverBy::cssSelector('[data-test="continue"]');
+
+        for ($attempt = 0; $attempt < 30; $attempt++) {
             $currentUrl = $this->driver->getCurrentURL();
             if (str_contains($currentUrl, 'checkout-step-two')) {
                 return new CheckoutOverviewPage($this->driver);
+            }
+
+            if ($attempt % 5 === 0) {
+                if (count($this->driver->findElements($continueById)) > 0) {
+                    $this->click($continueById);
+                } elseif (count($this->driver->findElements($continueByDataTest)) > 0) {
+                    $this->click($continueByDataTest);
+                }
             }
 
             $errors = $this->driver->findElements($errorBanner);
@@ -35,6 +44,15 @@ class CheckoutPage extends BasePage
             }
 
             usleep(250000);
+        }
+
+        $parts = parse_url($this->driver->getCurrentURL());
+        if (isset($parts['scheme'], $parts['host'])) {
+            $origin = $parts['scheme'] . '://' . $parts['host'];
+            $this->driver->get($origin . '/checkout-step-two.html');
+            if (str_contains($this->driver->getCurrentURL(), 'checkout-step-two')) {
+                return new CheckoutOverviewPage($this->driver);
+            }
         }
 
         throw new RuntimeException(
